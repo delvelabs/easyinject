@@ -166,3 +166,14 @@ class InjectorCloseTest(TestCase):
         injector.close()
 
         self.assertEqual(['Default'], self.call_list)
+
+    def test_clear_subinjectors_on_close(self):
+        injector = Injector(a=lambda: self.closer('A'))
+        sub = injector.sub(b=lambda: self.closer('B'))
+        sub.b
+        injector.a
+        self.assertEqual(1, injector.child_count)
+
+        del sub
+
+        self.assertEqual(0, injector.child_count)
