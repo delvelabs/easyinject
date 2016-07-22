@@ -1,6 +1,7 @@
 # Copyright 2016 Delve Labs inc. <info@delvelabs.ca>
 
 import inspect
+import weakref
 from functools import wraps
 
 
@@ -17,17 +18,17 @@ class Injector:
             self.record_closeable(item)
 
         if parent:
-            parent.___subs.append(self)
+            parent.___subs.append(weakref.ref(self))
 
     def __del__(self):
         self.close()
 
     def sub(self, **kwargs):
-        return InjectorProxy(Injector(self, **kwargs))
+        return Injector(self, **kwargs)
 
     @property
     def child_count(self):
-        return sum([s.child_count + 1 for s in self.___subs])
+        return sum([ref().child_count + 1 for ref in self.___subs if ref() is not None])
 
     def wrap(self, function):
         func = inspect.getfullargspec(function)
@@ -82,14 +83,13 @@ class Injector:
         if self.___closed:
             return
 
-        for sub in self.___subs:
-            sub.close()
+        for ref in self.___subs:
+            sub = ref()
+            if sub is not None:
+                sub.close()
 
         for call in self.___close_list:
             call()
-
-        if self.___parent is not None:
-            self.___parent.___subs.remove(self)
 
         self.___closed = True
 
@@ -98,48 +98,3 @@ class Injector:
             return self.get_argument(name)
         except KeyError:
             raise AttributeError(name)
-
-
-class InjectorProxy(Injector):
-    """
-    Proxy to circumvent the circular dependency between parent and child.
-    This proxy acts as a strong reference, ensuring that when it is deleted,
-    the real injector will be closed and removed from the list of references
-    in the parent.
-
-    Without this proxy, close() would need to be called manually on the sub
-    injectors.
-    """
-
-    def __init__(self, real_injector):
-        self.___real = real_injector
-
-    def __del__(self):
-        self.close()
-
-    def sub(self, **kwargs):
-        return self.___real.sub(**kwargs)
-
-    @property
-    def child_count(self):
-        return self.___real.child_count
-
-    def wrap(self, function):
-        return self.__real.wrap(function)
-
-    def get_argument(self, arg):
-        raise NotImplemented()  # This is private anyways
-
-    def call(self, func, *args, **kwargs):
-        return self.___real.call(func, *args, **kwargs)
-
-    def create(self, *args, **kwargs):
-        return self.___real.call(*args, **kwargs)
-
-    def close(self):
-        if self.___real is not None:
-            self.___real.close()
-            self.___real = None
-
-    def __getattr__(self, name):
-        return self.___real.__getattr__(name)
