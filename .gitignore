@@ -17,6 +17,8 @@ lib/
 man/
 share/
 pip-selfcheck.json
+EasyInject.egg-info
+dist/
 
 # cookies
 cookies*
