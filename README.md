@@ -1,7 +1,8 @@
-[![Build Status](https://travis-ci.org/delvelabs/easyinject.svg?branch=master)](https://travis-ci.org/delvelabs/easyinject)
-
 EasyInject
 ==========
+
+[![Build Status](https://travis-ci.org/delvelabs/easyinject.svg?branch=master)](https://travis-ci.org/delvelabs/easyinject)
+[![PyPi](https://badge.fury.io/py/easyinject.svg)](https://badge.fury.io/py/easyinject)
 
 A pythonic, reflection driven, dependency injection container.
 
@@ -13,7 +14,6 @@ With EasyInject, if the name fits, it should be right. No configuration.
 Objects are created on the fly and preserved for other uses.
 
 ```python
-
 from easyinject import Injector
 # We'll just skip some of these imports
 
@@ -51,6 +51,20 @@ app.logger.info("Hello World!)
 
 # Call close() on all managed objects, closing your loops, database connections, ...
 app.close()
+```
+
+Scopes are also managed. When using sub-injectors, resources will be closed properly
+for the sub-injectors and leave the parent ones intact.
+
+```python
+from easyinject import Injector
+
+global_scope = Injector(logger=logger.getLogger('test'))
+
+# ...
+
+request_scope = global_score.sub(connection=connect)
+
 ```
 
 # Requirements
