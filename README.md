@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/delvelabs/easyinject.svg?branch=master)](https://travis-ci.org/delvelabs/easyinject)
+
 EasyInject
 ==========
 
