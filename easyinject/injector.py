@@ -13,6 +13,7 @@ class Injector:
         self.___args = kwargs
         self.___close_list = []
         self.___closed = False
+        self.___initialized = set()
 
         for item in kwargs.values():
             self.record_closeable(item)
@@ -51,12 +52,16 @@ class Injector:
         try:
             value = self.___args[arg]
 
-            if inspect.isroutine(value) or inspect.isclass(value):
+            if arg not in self.___initialized and self.requires_processing(value):
                 self.___args[arg] = self.block_recursion
                 value = self.create(value)
                 self.___args[arg] = value
 
                 self.record_closeable(value)
+                if inspect.isroutine(value) or inspect.isclass(value):
+                    value = self.wrap(value)
+
+                self.___initialized.add(arg)
 
             return value
         except KeyError:
@@ -64,6 +69,9 @@ class Injector:
                 return self.___parent.get_argument(arg)
             else:
                 raise
+
+    def requires_processing(self, value):
+        return inspect.isroutine(value) or inspect.isclass(value)
 
     def block_recursion(self):
         raise RecursionError()

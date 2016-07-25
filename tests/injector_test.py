@@ -29,6 +29,11 @@ class InjectorTest(TestCase):
         value = injector.call(lambda a, b, c: a + b + c, b='B', c='C')
         self.assertEqual(value, "ABC")
 
+    def test_inject_function_leaves_wrapped_function(self):
+        injector = Injector(a='A', c='C', f=lambda c: lambda a, b: a + b + c)
+        self.assertEqual(injector.f(b='B'), 'ABC')
+        self.assertEqual(injector.f(a='B', b='B'), 'BBC')
+
     def test_nested_container(self):
         injector = Injector(a='A', b='A')
         sub = Injector(injector, b='B')
