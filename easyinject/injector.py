@@ -130,8 +130,12 @@ class Injector:
             if sub is not None:
                 sub.close()
 
-        for call in self.___close_list:
-            call()
+        # Destroy in reverse order as first elements created have more components depending on them
+        for call in self.___close_list[::-1]:
+            if inspect.iscoroutinefunction(call):
+                self.loop.run_until_complete(call())
+            else:
+                call()
 
         self.___closed = True
 

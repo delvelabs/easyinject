@@ -50,6 +50,7 @@ app.logger.info("Hello World!)
 # Finally
 
 # Call close() on all managed objects, closing your loops, database connections, ...
+# Async close() coroutines will be called using the loop key.
 app.close()
 ```
 

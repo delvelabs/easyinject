@@ -1,5 +1,7 @@
 # Copyright 2016 Delve Labs inc. <info@delvelabs.ca>
 
+import asyncio
+
 from unittest import TestCase
 from easyinject import Injector
 
@@ -98,7 +100,16 @@ class InjectorCloseTest(TestCase):
             def close(self):
                 test.call_list.append(self.value)
 
+        class AsyncCloser:
+            def __init__(self, value='Default', *, loop):
+                self.loop = loop
+                self.value = value
+
+            async def close(self):
+                test.call_list.append(self.value)
+
         test.closer = Closer
+        test.async_closer = AsyncCloser
 
     def test_close_does_nothing_by_default(self):
         injector = Injector()
@@ -110,19 +121,26 @@ class InjectorCloseTest(TestCase):
 
         self.assertEqual(['A'], self.call_list)
 
+    def test_async_closing(self):
+        injector = Injector(loop=asyncio.get_event_loop, a=self.async_closer)
+        injector.a
+        injector.close()
+
+        self.assertEqual(['Default'], self.call_list)
+
     def test_close_propagates_to_created_child_as_well(self):
         injector = Injector(a=self.closer('A'), b=lambda: self.closer('B'))
         injector.b
         injector.close()
 
-        self.assertEqual(['A', 'B'], self.call_list)
+        self.assertEqual(['B', 'A'], self.call_list)
 
     def test_close_made_in_sequence(self):
         injector = Injector(a=lambda b: self.closer('A'), b=lambda: self.closer('B'))
         injector.a
         injector.close()
 
-        self.assertEqual(['B', 'A'], self.call_list)
+        self.assertEqual(['A', 'B'], self.call_list)
 
     def test_close_shared_among_subinjectors(self):
         injector = Injector(a=lambda: self.closer('A'))
