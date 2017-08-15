@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='EasyInject',
-      version='0.2',
+      version='0.3',
       description='A pythonic, reflection driven, dependency injection container',
       author='Delve Labs inc.',
       author_email='info@delvelabs.ca',
