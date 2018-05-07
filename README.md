@@ -2,7 +2,7 @@ EasyInject
 ==========
 
 [![Build Status](https://travis-ci.org/delvelabs/easyinject.svg?branch=master)](https://travis-ci.org/delvelabs/easyinject)
-[![PyPi](https://badge.fury.io/py/easyinject.svg)](https://badge.fury.io/py/easyinject)
+[![PyPI version](https://badge.fury.io/py/EasyInject.svg)](https://badge.fury.io/py/EasyInject)
 
 A pythonic, reflection driven, dependency injection container.
 
